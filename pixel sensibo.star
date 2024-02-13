@@ -57,6 +57,7 @@ if tvoc_cached != None:  # check for cached data to avoid hitting the API too fr
       rep = http.get(SENSIBO_URL)
       if rep.status_code != 200:
         fail("Sensibo request failed with status %d", rep.status_code)
+      # parse the json for our data
       tvoc = rep.json()["result"]["measurements"]["tvoc"]
       co = rep.json()["result"]["measurements"]["co2"]
       pm_rep = rep.json()["result"]["measurements"]["pm25"]
@@ -64,6 +65,8 @@ if tvoc_cached != None:  # check for cached data to avoid hitting the API too fr
       iaq_rep = rep.json()["result"]["measurements"]["iaq"]
       temp_rep = rep.json()["result"]["measurements"]["temperature"]
       humid_rep = rep.json()["result"]["measurements"]["humidity"]
+
+      # format the data
       pm = humanize.float("#.##", float(pm_rep))
       etoh = humanize.float("#.##", float(etoh_rep))
       iaq = humanize.float("#.##", float(iaq_rep))
