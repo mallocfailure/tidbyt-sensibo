@@ -12,29 +12,29 @@ load("math.star", "math")
 load("humanize.star", "humanize")
 load("cache.star", "cache")
 
-
+# Change YOURSENSIBO to the api of your Sensibo Elements, and change YOURKEY to your Sensibo API key
 SENSIBO_URL = "https://home.sensibo.com/api/v2/pods/YOURSENSIBO?fields=*&apiKey=YOURKEY"
 
 white_color="#FFFFFF" # white
 red_color="#BF0000" # red
-orange_color="#FFA500"
-sensibo_color="#24B999" # sensibo
+orange_color="#FFA500" # orange
+sensibo_color="#24B999" # sensibo teal
 temp1_color="#FFFFFF"
 temp2_color="#FFFFFF"
 temp3_color="#FFFFFF"
 
-# variable for hot temp, switches to red font
+# Setting thresholds for temperature and measurment colors
 hot_temp = 74
 high_tvoc = 1500
 low_tvoc = 500
-high_co=2000
-low_co=1000
-high_pm=75
-low_pm=75
-high_etoh=10
-low_etoh=20
-high_iaq=150
-low_iaq=100
+high_co = 2000
+low_co = 1000
+high_pm = 75
+low_pm = 75
+high_etoh = 10
+low_etoh = 20
+high_iaq = 150
+low_iaq = 100
 
 TTL_SEC=60
 
@@ -42,7 +42,8 @@ def main(config):
 
 
     tvoc_cached = cache.get("tvoc")
-    if tvoc_cached != None:
+
+if tvoc_cached != None:  # check for cached data to avoid hitting the API too frequently    
 #      print("Cache hit, displaying cached data.")
       tvoc = cache.get("tvoc")
       co = cache.get("co")
@@ -51,7 +52,7 @@ def main(config):
       iaq = cache.get("iaq")
       temp = cache.get("temp")
       humidity = cache.get("humidity")
-    else:
+    else: # grab data if we need it
  #     print("Cache miss, fetching data.")
       rep = http.get(SENSIBO_URL)
       if rep.status_code != 200:
@@ -68,6 +69,8 @@ def main(config):
       iaq = humanize.float("#.##", float(iaq_rep))
       temp = (temp_rep * (9/5)) + 32
       temp = humanize.float("#.#", float(temp))
+
+      # populate the data cache to avoid hammering the url
       cache.set("tvoc", str(int(tvoc)), ttl_seconds=TTL_SEC)
       cache.set("co", str(int(co)), ttl_seconds=TTL_SEC)
       cache.set("pm", pm, ttl_seconds=TTL_SEC)
@@ -75,6 +78,7 @@ def main(config):
       cache.set("iaq", iaq, ttl_seconds=TTL_SEC)
       cache.set("temp", str(temp), ttl_seconds=TTL_SEC)
 
+    # set font colors base on high/low thresholds
     tvoc_color = white_color
     if int(tvoc) > high_tvoc:
        tvoc_color = red_color
@@ -115,7 +119,7 @@ def main(config):
     else:
        iaq_color = sensibo_color
 
-
+    # simple rendering in a single text column
     return render.Root(
         child = render.Column(
            children=[
